@@ -1,6 +1,6 @@
 #![no_std]
+#![feature(async_fn_in_trait)]
 
-use embedded_hal_async::i2c::I2c;
 use embedded_hal_async::i2c::{Error, ErrorKind, ErrorType};
 
 #[derive(Debug)]
@@ -380,7 +380,7 @@ mod tests {
         async fn transaction(
             &mut self,
             address: embedded_hal_async::i2c::SevenBitAddress,
-            operations: &mut [embedded_hal_async::i2c::Operation],
+            operations: &mut [embedded_hal_async::i2c::Operation<'_>],
         ) -> Result<(), Self::Error> {
             for operation in operations {
                 match operation {
@@ -401,8 +401,9 @@ mod tests {
         }
     }
 
-    #[test]
-    fn init_test() {
+    use async_test_lite::async_test;
+    #[async_test]
+    async fn init_test() {
         const EXPECTED_WRITE_DATA: [u8; 7] = [0xfe, 0xc5, 0xfd, 0x03, 0x11, 0x00, 0x01];
         const EXPECTED_READ_DATA: [u8; 1] = [0];
 
@@ -414,8 +415,8 @@ mod tests {
         assert_eq!(bus.into_write_slice(), EXPECTED_WRITE_DATA);
     }
 
-    #[test]
-    fn configuration_test() {
+    #[async_test]
+    async fn configuration_test() {
         const EXPECTED_WRITE_DATA: &[u8] = &[0xfe, 0xc5, 0xfd, 0x03, 0x00, 0xaa, 0x00, 0xab];
 
         let mut bus = FakeI2cBus::<32, 32>::new();
@@ -428,8 +429,8 @@ mod tests {
         assert_eq!(bus.into_write_slice(), EXPECTED_WRITE_DATA);
     }
 
-    #[test]
-    fn global_current_control_test() {
+    #[async_test]
+    async fn global_current_control_test() {
         const EXPECTED_WRITE_DATA: &[u8] = &[0xfe, 0xc5, 0xfd, 0x03, 0x01, 0xaa, 0x01, 0xab];
 
         let mut bus = FakeI2cBus::<32, 32>::new();
@@ -443,8 +444,8 @@ mod tests {
         assert_eq!(bus.into_write_slice(), EXPECTED_WRITE_DATA);
     }
 
-    #[test]
-    fn led_full_apply_test() {
+    #[async_test]
+    async fn led_full_apply_test() {
         const EXPECTED_WRITE_DATA: &[u8] = &[
             0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xaa, 0xaa,
@@ -461,8 +462,8 @@ mod tests {
         assert_eq!(bus.into_write_slice(), EXPECTED_WRITE_DATA);
     }
 
-    #[test]
-    fn led_striped_apply_test() {
+    #[async_test]
+    async fn led_striped_apply_test() {
         const EXPECTED_WRITE_DATA: &[u8] = &[
             0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01, 0xaa, 0xaa,
@@ -484,8 +485,8 @@ mod tests {
         is31fl3733.set_leds(&leds_state).await.unwrap();
         assert_eq!(bus.into_write_slice(), EXPECTED_WRITE_DATA);
     }
-    #[test]
-    fn led_start_apply_test() {
+    #[async_test]
+    async fn led_start_apply_test() {
         const EXPECTED_WRITE_DATA: &[u8] = &[
             0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xaa, 0xaa,
@@ -503,8 +504,8 @@ mod tests {
         assert_eq!(bus.into_write_slice(), EXPECTED_WRITE_DATA);
     }
 
-    #[test]
-    fn led_middle_apply_test() {
+    #[async_test]
+    async fn led_middle_apply_test() {
         const EXPECTED_WRITE_DATA: &[u8] = &[
             0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x08, 0xaa, 0xaa,
@@ -523,8 +524,8 @@ mod tests {
         assert_eq!(bus.into_write_slice(), EXPECTED_WRITE_DATA);
     }
 
-    #[test]
-    fn led_control_test() {
+    #[async_test]
+    async fn led_control_test() {
         const EXPECTED_WRITE_DATA: &[u8] = &[
             0xfe, 0xc5, 0xfd, 0x02, 0xfe, 0xc5, 0xfd, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -546,8 +547,8 @@ mod tests {
         assert_eq!(bus.into_write_slice(), EXPECTED_WRITE_DATA);
     }
 
-    #[test]
-    fn led_pwm_test() {
+    #[async_test]
+    async fn led_pwm_test() {
         const EXPECTED_WRITE_DATA: &[u8] = &[
             0xfe, 0xc5, 0xfd, 0x01, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
